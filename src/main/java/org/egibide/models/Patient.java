@@ -10,6 +10,8 @@ public class Patient {
     private String phone;
     private String disease;
 
+    Doctor doctor;
+
     public Patient(int id, String name, String lastname, String dni, int age, String phone, String disease) {
         this.id = id;
         this.name = name;
@@ -87,5 +89,8 @@ public class Patient {
                 ", phone='" + phone + '\'' +
                 ", disease='" + disease + '\'' +
                 '}';
+    }
+
+    public void setDoctor(Doctor doctor) {
     }
 }

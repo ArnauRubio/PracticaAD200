@@ -87,6 +87,11 @@ public class DoctorDaoImpl implements DoctorDao {
 
     }
 
+    @Override
+    public Doctor getDoctorByPatientId(int patient_id) {
+        return null;
+    }
+
     private boolean doctorExists(int id) {
        if(getDoctor(id) == null){
            System.out.println("El doctor no existe");
