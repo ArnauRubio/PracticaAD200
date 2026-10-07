@@ -7,6 +7,10 @@ import org.egibide.idao.PatientDaoImpl;
 import org.egibide.irepositories.PatientRepository;
 import org.egibide.models.Doctor;
 import org.egibide.models.Patient;
+import org.egibide.utils.DatabaseConnection;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class PatientRepositoryImpl implements PatientRepository {
     private PatientDao patientDao = new PatientDaoImpl();
@@ -23,7 +27,39 @@ public class PatientRepositoryImpl implements PatientRepository {
     }
 
     @Override
-    public void add(Patient patient) {
+    public boolean add(Patient patient) {
+        if (patientExists(patient.getId())) {
+
+            String query = "insert into patients values id=?, name=?, lastname=?, dni=?, age=?, phone=?, disease=?";
+
+            PreparedStatement ps;
+
+            int rs = 0;
+
+            try {
+                ps = DatabaseConnection.getInstance().getConnection().prepareStatement(query);
+                ps.setInt(1, patient.getId());
+                ps.setString(2, patient.getName());
+                ps.setString(3, patient.getLastname());
+                ps.setString(4, patient.getDni());
+                ps.setInt(5, patient.getAge());
+                ps.setString(6, patient.getPhone());
+                ps.setString(7, patient.getDisease());
+
+                rs = ps.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return (rs > 0);
+        }
+        return false;
+    }
+
+    private boolean patientExists(int id) {
+        if(getPatient(id) == null){
+            System.out.println("El paciente no existe");
+        }
+        return true;
 
     }
 

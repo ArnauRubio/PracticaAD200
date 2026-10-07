@@ -10,14 +10,38 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class DoctorDaoImpl implements DoctorDao {
+
     @Override
-    public int add(Doctor doctor) {
-        return 0;
+    public boolean add(Doctor doctor) {
+        if (doctorExists(doctor.getId())) {
+
+            String query = "insert into doctors values id=?, name=?, lastname=?, dni=?, salary=?, speciality=?";
+
+            PreparedStatement ps;
+
+            int rs = 0;
+
+            try {
+                ps = DatabaseConnection.getInstance().getConnection().prepareStatement(query);
+                ps.setString(1, doctor.getName());
+                ps.setString(2, doctor.getLastname());
+                ps.setString(3, doctor.getDni());
+                ps.setDouble(4, doctor.getSalary());
+                ps.setString(5, doctor.getSpeciality());
+                ps.setInt(6, doctor.getId());
+
+                rs = ps.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            return (rs > 0);
+        }
+        return false;
     }
 
     @Override
     public void delete(int id) {
-
+        getDoctors().remove(id);
     }
 
     @Override
@@ -51,7 +75,7 @@ public class DoctorDaoImpl implements DoctorDao {
 
     @Override
     public List<Doctor> getDoctors() {
-        return List.of();
+        return List.of((Doctor) getDoctors());
     }
 
 
@@ -89,7 +113,7 @@ public class DoctorDaoImpl implements DoctorDao {
 
     @Override
     public Doctor getDoctorByPatientId(int patient_id) {
-        return null;
+        return getDoctor(patient_id);
     }
 
     private boolean doctorExists(int id) {
