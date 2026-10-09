@@ -7,6 +7,7 @@ import org.egibide.utils.DatabaseConnection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DoctorDaoImpl implements DoctorDao {
@@ -14,34 +15,42 @@ public class DoctorDaoImpl implements DoctorDao {
     @Override
     public boolean add(Doctor doctor) {
         if (doctorExists(doctor.getId())) {
-
-            String query = "insert into doctors values id=?, name=?, lastname=?, dni=?, salary=?, speciality=?";
-
-            PreparedStatement ps;
-
-            int rs = 0;
-
-            try {
-                ps = DatabaseConnection.getInstance().getConnection().prepareStatement(query);
-                ps.setString(1, doctor.getName());
-                ps.setString(2, doctor.getLastname());
-                ps.setString(3, doctor.getDni());
-                ps.setDouble(4, doctor.getSalary());
-                ps.setString(5, doctor.getSpeciality());
-                ps.setInt(6, doctor.getId());
-
-                rs = ps.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return (rs > 0);
+            return false;
         }
-        return false;
+
+        String query = "INSERT INTO doctors (id, name, lastname, dni, salary, speciality) VALUES (?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement ps = DatabaseConnection.getInstance()
+                .getConnection().prepareStatement(query)) {
+            ps.setInt(1, doctor.getId());
+            ps.setString(2, doctor.getName());
+            ps.setString(3, doctor.getLastname());
+            ps.setString(4, doctor.getDni());
+            ps.setDouble(5, doctor.getSalary());
+            ps.setString(6, doctor.getSpeciality());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
     public void delete(int id) {
-        getDoctors().remove(id);
+        String query =
+                "DELETE FROM doctors WHERE id=?";
+
+        try {
+
+            PreparedStatement ps = DatabaseConnection.getInstance()
+                    .getConnection().prepareStatement(query);
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            ps.close();
+
+        } catch (SQLException e) {
+
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -49,20 +58,20 @@ public class DoctorDaoImpl implements DoctorDao {
 
         String query = "select * from doctors where id=?";
 
-        PreparedStatement ps = null;
         Doctor doctor = null;
 
-        try {
-            ps = DatabaseConnection.getInstance().getConnection().prepareStatement(query);
+        try (PreparedStatement ps = DatabaseConnection.getInstance()
+                .getConnection().prepareStatement(query)) {
             ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                doctor = new Doctor(rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("lastname"),
-                        rs.getString("dni"),
-                        rs.getDouble("salary"),
-                        rs.getString("speciality"));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    doctor = new Doctor(rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("lastname"),
+                            rs.getString("dni"),
+                            rs.getDouble("salary"),
+                            rs.getString("speciality"));
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -75,7 +84,29 @@ public class DoctorDaoImpl implements DoctorDao {
 
     @Override
     public List<Doctor> getDoctors() {
-        return List.of((Doctor) getDoctors());
+        ArrayList<Doctor> doctors =
+                new ArrayList<>();
+
+        String query =
+                "SELECT * FROM doctors";
+
+        try (PreparedStatement ps = DatabaseConnection.getInstance()
+                .getConnection().prepareStatement(query);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                doctors.add(new Doctor(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("lastname"),
+                        rs.getString("dni"),
+                        rs.getDouble("salary"),
+                        rs.getString("speciality")));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return doctors;
     }
 
 
@@ -83,43 +114,54 @@ public class DoctorDaoImpl implements DoctorDao {
 
     public boolean update(Doctor doctor) {
 
-        if (doctorExists(doctor.getId())) {
-
-            String query = "update doctors set name=?, lastname=?, dni=?, salary=?, speciality=? where id=?";
-
-            PreparedStatement ps;
-
-            int rs = 0;
-
-            try {
-                ps = DatabaseConnection.getInstance().getConnection().prepareStatement(query);
-                ps.setString(1, doctor.getName());
-                ps.setString(2, doctor.getLastname());
-                ps.setString(3, doctor.getDni());
-                ps.setDouble(4, doctor.getSalary());
-                ps.setString(5, doctor.getSpeciality());
-                ps.setInt(6, doctor.getId());
-
-                rs = ps.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            return (rs > 0);
+        if (!doctorExists(doctor.getId())) {
+            return false;
         }
-        return false;
-
-
+        String query = "UPDATE doctors SET name=?, lastname=?, dni=?, salary=?, speciality=? WHERE id=?";
+        try (PreparedStatement ps = DatabaseConnection.getInstance()
+                .getConnection().prepareStatement(query)) {
+            ps.setString(1, doctor.getName());
+            ps.setString(2, doctor.getLastname());
+            ps.setString(3, doctor.getDni());
+            ps.setDouble(4, doctor.getSalary());
+            ps.setString(5, doctor.getSpeciality());
+            ps.setInt(6, doctor.getId());
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
     public Doctor getDoctorByPatientId(int patient_id) {
-        return getDoctor(patient_id);
+        String query =
+                "SELECT d.* " + "FROM doctors d " + "JOIN patients p ON d.id = p.doctor_id " + "WHERE p.id = ?";
+
+        Doctor doctor = null;
+
+        try (PreparedStatement ps = DatabaseConnection.getInstance()
+                .getConnection().prepareStatement(query)) {
+            ps.setInt(1, patient_id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    doctor = new Doctor(
+                            rs.getInt("id"),
+                            rs.getString("name"),
+                            rs.getString("lastname"),
+                            rs.getString("dni"),
+                            rs.getDouble("salary"),
+                            rs.getString("speciality"));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return doctor;
     }
 
     private boolean doctorExists(int id) {
-       if(getDoctor(id) == null){
-           System.out.println("El doctor no existe");
-       }
-       return true;
+        return getDoctor(id) != null;
     }
 }

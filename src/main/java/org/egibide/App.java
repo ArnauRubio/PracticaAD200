@@ -9,10 +9,9 @@ import java.sql.SQLException;
  * Hello world!
  *
  */
-public class App 
-{
-    public static void main( String[] args ) throws SQLException {
-        System.out.println( "Hello World!" );
+public class App {
+    public static void main(String[] args) throws SQLException {
+        System.out.println("Hello World!");
         // Intentamos conectar a la BD
         DatabaseConnection dbc = DatabaseConnection.getInstance();
         Connection conexion = dbc.getConnection();

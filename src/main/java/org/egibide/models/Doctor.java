@@ -1,5 +1,8 @@
 package org.egibide.models;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class Doctor {
     private int id;
     private String name;
@@ -7,6 +10,7 @@ public class Doctor {
     private String dni;
     private double salary;
     private String speciality;
+    private List<Patient> attendedPatients = new ArrayList<>();
 
     public Doctor(int id, String name, String lastname, String dni, double salary, String speciality) {
         this.id = id;
@@ -75,5 +79,13 @@ public class Doctor {
                 ", salary=" + salary +
                 ", speciality='" + speciality + '\'' +
                 '}';
+    }
+
+    public Patient[] getAttendedPatients() {
+        return attendedPatients.toArray(new Patient[0]);
+    }
+
+    public void setAttendedPatients(List<Patient> patients) {
+        attendedPatients = new ArrayList<>(patients);
     }
 }

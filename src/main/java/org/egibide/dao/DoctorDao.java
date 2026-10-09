@@ -6,10 +6,14 @@ import java.util.List;
 
 public interface DoctorDao {
     boolean add(Doctor doctor);
+
     void delete(int id);
+
     Doctor getDoctor(int id);
+
     List<Doctor> getDoctors();
+
     boolean update(Doctor doctor);
 
-    public Doctor getDoctorByPatientId(int patient_id);
+    Doctor getDoctorByPatientId(int patient_id);
 }

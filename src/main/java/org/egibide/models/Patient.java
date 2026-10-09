@@ -10,7 +10,7 @@ public class Patient {
     private String phone;
     private String disease;
 
-    Doctor doctor;
+    private Doctor doctor;
 
     public Patient(int id, String name, String lastname, String dni, int age, String phone, String disease) {
         this.id = id;
@@ -92,5 +92,10 @@ public class Patient {
     }
 
     public void setDoctor(Doctor doctor) {
+        this.doctor = doctor;
+    }
+
+    public Doctor getDoctor() {
+        return doctor;
     }
 }
